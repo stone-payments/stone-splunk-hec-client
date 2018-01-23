@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>StoneCo.SplunkHECLibrary</RootNamespace>
+    <AssemblyName>SplunkHECLibrary</AssemblyName>
+    <DebugType>Full</DebugType>
+    <PackageId>StoneCo.SplunkHECLibrary</PackageId>
+    <Authors>Marcus Leandro &lt;mleandro@stone.com.br&gt;</Authors>
+    <Company>StoneCo</Company>
+    <Description>A .NET Standard Library to publish events to Splunk Http Event Collector.</Description>
+    <PackageProjectUrl>https://github.com/stone-payments/SplunkHECLibrary</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/stone-payments/SplunkHECLibrary</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>splunk hec</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+  </ItemGroup>
+
+</Project>

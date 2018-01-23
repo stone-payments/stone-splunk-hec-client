@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SplunkHECLibrary", "src\SplunkHECLibrary\SplunkHECLibrary.csproj", "{4F30A622-2036-48B8-95CE-AB5BF7763E26}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4605ACF4-119B-4F9D-BF5A-84B96A8DBEE2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{65AC6285-3A97-47A8-9BF2-1641F8630F66}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SplunkHECLibrary.UnitTest", "tests\SplunkHECLibrary.UnitTest\SplunkHECLibrary.UnitTest.csproj", "{5FFC25FF-C62D-4AF0-855B-6E83371BBB02}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4F30A622-2036-48B8-95CE-AB5BF7763E26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F30A622-2036-48B8-95CE-AB5BF7763E26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F30A622-2036-48B8-95CE-AB5BF7763E26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F30A622-2036-48B8-95CE-AB5BF7763E26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FFC25FF-C62D-4AF0-855B-6E83371BBB02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FFC25FF-C62D-4AF0-855B-6E83371BBB02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FFC25FF-C62D-4AF0-855B-6E83371BBB02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FFC25FF-C62D-4AF0-855B-6E83371BBB02}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4F30A622-2036-48B8-95CE-AB5BF7763E26} = {4605ACF4-119B-4F9D-BF5A-84B96A8DBEE2}
+		{5FFC25FF-C62D-4AF0-855B-6E83371BBB02} = {65AC6285-3A97-47A8-9BF2-1641F8630F66}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4870BB31-181C-4DF1-9FE1-68A69C2B56CE}
+	EndGlobalSection
+EndGlobal
