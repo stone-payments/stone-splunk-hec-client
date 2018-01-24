@@ -1,5 +1,7 @@
 # Stone Splunk Http Events Collector Client
 
+__Portuguese translation available [here](README_pt.md).__
+
 An easy to use and high performance .NET Standard Class Library to publish events on Splunk Http Events Collector.
 
 * [Code of Conduct](codeOfConduct/README.md)
