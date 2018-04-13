@@ -126,7 +126,8 @@ namespace StoneCo.SplunkHECLibrary.UnitTest
         public void Send_when_return_is_ok()
         {
             MockHttpMessageHandler mockHttp = new MockHttpMessageHandler();
-            mockHttp.When(this.Configuration.Endpoint.OriginalString)
+            string route = string.Format("{0}/event", this.Configuration.Endpoint.OriginalString);
+            mockHttp.When(route)
                 .Respond("application/javascript", "{\"text\":\"Success\",\"code\":0}");
 
             ISplunkHECClient client = new SplunkHECClient(this.Configuration, mockHttp);
@@ -168,8 +169,9 @@ namespace StoneCo.SplunkHECLibrary.UnitTest
         [TestMethod]
         public void Send_when_response_is_empty()
         {
+            string route = string.Format("{0}/event", this.Configuration.Endpoint.OriginalString);
             MockHttpMessageHandler mockHttp = new MockHttpMessageHandler();
-            mockHttp.When(this.Configuration.Endpoint.OriginalString)
+            mockHttp.When(route)
                 .Respond("application/javascript", "");
 
             ISplunkHECClient client = new SplunkHECClient(this.Configuration, mockHttp);
@@ -213,8 +215,9 @@ namespace StoneCo.SplunkHECLibrary.UnitTest
             httpResponse.StatusCode = HttpStatusCode.BadRequest;
             httpResponse.Content = new StringContent("{\"text\":\"Invalid data format\",\"code\":6,\"invalid-event-number\":0}");
 
+            string route = string.Format("{0}/event", this.Configuration.Endpoint.OriginalString);
             MockHttpMessageHandler mockHttp = new MockHttpMessageHandler();
-            mockHttp.When(this.Configuration.Endpoint.OriginalString)
+            mockHttp.When(route)
                 .Respond(httpResponse.StatusCode, httpResponse.Content);
 
             ISplunkHECClient client = new SplunkHECClient(this.Configuration, mockHttp);
@@ -678,6 +681,49 @@ namespace StoneCo.SplunkHECLibrary.UnitTest
 
             ArgumentNullException internalEx = ex.InnerException as ArgumentNullException;
             Assert.AreEqual("request", internalEx.ParamName);
+        }
+
+        #endregion
+
+        #region HealthCheck
+
+        /// <summary>
+        /// Must pass.
+        /// </summary>
+        [TestMethod]
+        public void HealthCheck_passing_token_returning_ok()
+        {
+            string token = "MyToken";
+            MockHttpMessageHandler mockHttp = new MockHttpMessageHandler();
+            string route = string.Format("{0}/health?token={1}", this.Configuration.Endpoint.OriginalString, token);
+            mockHttp.When(route)
+                .Respond("application/javascript", "{\"text\":\"HEC is healthy\",\"code\":200}");
+
+            ISplunkHECClient client = new SplunkHECClient(this.Configuration, mockHttp);
+            ISplunkHECResponse response = client.HealthCheck(token);
+
+            Assert.AreEqual(200, response.Code);
+            Assert.AreEqual("HEC is healthy", response.Text);
+            Assert.AreEqual(HttpStatusCode.OK, response.HttpResponseCode);
+        }
+
+        /// <summary>
+        /// Must pass.
+        /// </summary>
+        [TestMethod]
+        public void HealthCheck_not_spassing_token_returning_ok()
+        {
+            MockHttpMessageHandler mockHttp = new MockHttpMessageHandler();
+            string route = string.Format("{0}/health", this.Configuration.Endpoint.OriginalString);
+            mockHttp.When(route)
+                .Respond("application/javascript", "{\"text\":\"HEC is healthy\",\"code\":200}");
+
+            ISplunkHECClient client = new SplunkHECClient(this.Configuration, mockHttp);
+            ISplunkHECResponse response = client.HealthCheck();
+
+            Assert.AreEqual(200, response.Code);
+            Assert.AreEqual("HEC is healthy", response.Text);
+            Assert.AreEqual(HttpStatusCode.OK, response.HttpResponseCode);
         }
 
         #endregion

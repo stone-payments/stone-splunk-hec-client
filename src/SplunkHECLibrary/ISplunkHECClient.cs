@@ -16,6 +16,10 @@ namespace StoneCo.SplunkHECLibrary
 
         event ResponseEventHandler AfterSend;
 
+        Task<ISplunkHECResponse> HealthCheckAsync(string token = "");
+
+        ISplunkHECResponse HealthCheck(string token = "");
+
         ISplunkHECResponse Send(ISplunkHECRequest request);
 
         Task<ISplunkHECResponse> SendAsync(ISplunkHECRequest request);
