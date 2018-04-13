@@ -179,15 +179,72 @@ namespace StoneCo.SplunkHECLibrary
             {
                 this.OverrideEventFields(this.Configuration, doc);
             });
-            
-            HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Post, this.Configuration.Endpoint.AbsolutePath);            
+
+            string route = string.Format("{0}/event", this.Configuration.Endpoint.AbsolutePath);
+            HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Post, route);
             httpRequest.Content = new StringContent(request.Serialize(), Encoding.UTF8, "application/json");            
             return await this.Client.SendAsync(httpRequest);
+        }
+
+        /// <summary>
+        /// Converts a HttpResponseMessage to ISplunkHECResponse.
+        /// </summary>
+        /// <param name="httpResponseMessage">The HttpResponseMessage.</param>
+        /// <returns>The ISplunkHECResponse.</returns>
+        protected ISplunkHECResponse TreatHttpResponse(HttpResponseMessage httpResponseMessage)
+        {
+            ISplunkHECResponse response = new SplunkHECResponse();
+            string strResponse = httpResponseMessage.Content.ReadAsStringAsync().Result;
+            if (string.IsNullOrWhiteSpace(strResponse) == false)
+            {
+                response = JsonConvert.DeserializeObject<SplunkHECResponse>(strResponse);
+            }
+
+            response.HttpResponseCode = httpResponseMessage.StatusCode;
+
+            return response;
         }
 
         #endregion
 
         #region Public methods
+
+        /// <summary>
+        /// Performs a health check on HEC endpoint.
+        /// </summary>
+        /// <param name="token">The authentication token.</param>
+        /// <returns>The response.</returns>
+        public async Task<ISplunkHECResponse> HealthCheckAsync(string token = "")
+        {
+            return await Task.Run<ISplunkHECResponse>(async () =>
+            {
+                string route = string.Format("{0}/health", this.Configuration.Endpoint.AbsolutePath);
+                if (token != "")
+                {
+                    route = string.Format("{0}?token={1}", route, token);
+                }
+
+                ISplunkHECResponse response;                
+                HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, route);
+                HttpResponseMessage httpResponse = await this.Client.SendAsync(httpRequest);
+
+                response = TreatHttpResponse(httpResponse);
+
+                this.AfterSend?.Invoke(this, response);
+                return response;
+            });
+        }
+
+        /// <summary>
+        /// Performs a health check on HEC endpoint.
+        /// </summary>
+        /// <param name="token">The authentication token.</param>
+        /// <returns>The response.</returns>
+        public ISplunkHECResponse HealthCheck(string token = "")
+        {
+            Task<ISplunkHECResponse> response = this.HealthCheckAsync(token);            
+            return response.Result;
+        }
 
         /// <summary>
         /// Send the request to Splunk HEC synchronously.
@@ -214,19 +271,11 @@ namespace StoneCo.SplunkHECLibrary
                 this.BeforeSend?.Invoke(this, request);
                 HttpResponseMessage httpResponse = await InternalSendAsync(request);
 
-                response = new SplunkHECResponse();                
-                string strResponse = httpResponse.Content.ReadAsStringAsync().Result;
-                if(string.IsNullOrWhiteSpace(strResponse) == false)
-                {
-                    response = JsonConvert.DeserializeObject<SplunkHECResponse>(strResponse);
-                }
-
-                response.HttpResponseCode = httpResponse.StatusCode;
+                response = TreatHttpResponse(httpResponse);
 
                 this.AfterSend?.Invoke(this, response);
                 return response;
-            });
-            
+            });            
         }
 
         #endregion
