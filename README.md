@@ -82,7 +82,6 @@ ISplunkHECDocument doc = new SplunkHECDocument(human);
 ISplunkHECRequest request = new SplunkHECRequest(doc);
 
 splunkHECClient.Send(request);
-splunkHECClient.SendAsync(request);
 
 ```
 
