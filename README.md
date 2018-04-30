@@ -79,6 +79,12 @@ Human human = new Human
 };
 
 ISplunkHECDocument doc = new SplunkHECDocument(human);
+doc.Index = "my-index";
+doc.Source = "my-source";
+doc.SourceType = "my-sourcetype";
+doc.Host = "my-host";
+doc.Time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
 ISplunkHECRequest request = new SplunkHECRequest(doc);
 
 splunkHECClient.Send(request);
