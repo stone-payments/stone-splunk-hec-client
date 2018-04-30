@@ -46,11 +46,23 @@ enum Gender
 
 ```
 
+### ISplunkHECDocument
+Represents a document to add in a ISplunkHECRequest.
+
+### ISplunkHECRequest
+Represents a request to send to Splunk.
+
+### ISplunkHECResponse
+Represents a response from Splunk.
+
+### Constructors
+
+
 ### Methods
 
 
 #### Send
-Sends a request synchronously.
+Sends a request.
 
 ***Signature***
 
@@ -92,15 +104,8 @@ splunkHECClient.Send(request);
 ```
 
 
-#### SendAsync
-Sends a request asynchronously.
-
-
 #### HealthCheck
-Sends a health check request to Splunk Http Events Collector synchronously.
-
-#### HealthCheckAsync
-Sends a health check request to Splunk Http Events Collector asynchronously.
+Sends a health check request to Splunk Http Events Collector.
 
 
 ### Events
