@@ -50,7 +50,7 @@ enum Gender
 Represents a document to add in a ISplunkHECRequest.
 
 ### ISplunkHECRequest
-Represents a request to send to Splunk.
+Represents a request to send to Splunk. Each request contains one or more documents.
 
 ### ISplunkHECResponse
 Represents a response from Splunk.
