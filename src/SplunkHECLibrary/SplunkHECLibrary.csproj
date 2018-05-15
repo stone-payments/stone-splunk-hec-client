@@ -14,8 +14,8 @@
     <RepositoryUrl>https://github.com/stone-payments/SplunkHECLibrary</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>splunk hec</PackageTags>
-    <Version>1.0.1</Version>
-    <PackageReleaseNotes>Creating HealthCheck method.</PackageReleaseNotes>
+    <Version>1.0.2</Version>
+    <PackageReleaseNotes>Implementing IDisposable pattern on ISplunkHECRequest.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

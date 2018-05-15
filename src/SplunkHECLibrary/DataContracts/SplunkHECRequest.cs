@@ -68,6 +68,43 @@ namespace StoneCo.SplunkHECLibrary.DataContracts
 
         #endregion
 
+        #region IDisposable Support
+
+        ~SplunkHECRequest()
+        {
+            Dispose(false);
+        }
+
+        private bool disposedValue = false; // To detect redundant calls
+
+        /// <summary>
+        /// Dispose pattern.
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    this.Items = null;                    
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        /// <summary>
+        /// Dispose pattern.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
         #region Public methods
 
         /// <summary>
