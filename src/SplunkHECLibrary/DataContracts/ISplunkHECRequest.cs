@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace StoneCo.SplunkHECLibrary.DataContracts
 {
     /// <summary>
     /// An interface for a Splunk Http Events Collector request class.
     /// </summary>
-    public interface ISplunkHECRequest
+    public interface ISplunkHECRequest : IDisposable
     {
         /// <summary>
         /// A collection with request items.

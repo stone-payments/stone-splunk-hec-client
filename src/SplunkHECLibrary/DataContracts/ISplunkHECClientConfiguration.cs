@@ -32,7 +32,7 @@ namespace StoneCo.SplunkHECLibrary.DataContracts
         /// <summary>
         /// Authentication token.
         /// </summary>
-        string Token { get; set; }
+        string Token { get; set; }        
 
         /// <summary>
         /// Field to use as timestamp. If not defined, the timestamp will be created by Splunk at insert time.
