@@ -252,9 +252,8 @@ namespace StoneCo.SplunkHECLibrary
         /// <param name="request">The request.</param>
         /// <returns>The response.</returns>
         public ISplunkHECResponse Send(ISplunkHECRequest request)
-        {
-            Task<ISplunkHECResponse> response = this.SendAsync(request);
-            return response.Result;
+        {            
+            return this.SendAsync(request).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -263,19 +262,16 @@ namespace StoneCo.SplunkHECLibrary
         /// <param name="request">The request.</param>
         /// <returns>The response.</returns>
         public async Task<ISplunkHECResponse> SendAsync(ISplunkHECRequest request)
-        {
-            return await Task.Run<ISplunkHECResponse>(async () =>
-            {
-                ISplunkHECResponse response;
+        {            
+            ISplunkHECResponse response;
 
-                this.BeforeSend?.Invoke(this, request);
-                HttpResponseMessage httpResponse = await InternalSendAsync(request);
+            this.BeforeSend?.Invoke(this, request);
+            HttpResponseMessage httpResponse = await InternalSendAsync(request);
 
-                response = TreatHttpResponse(httpResponse);
+            response = TreatHttpResponse(httpResponse);
 
-                this.AfterSend?.Invoke(this, response);
-                return response;
-            });            
+            this.AfterSend?.Invoke(this, response);
+            return response;            
         }
 
         #endregion
