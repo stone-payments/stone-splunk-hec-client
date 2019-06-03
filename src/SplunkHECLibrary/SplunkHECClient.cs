@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -31,6 +32,15 @@ namespace StoneCo.SplunkHECLibrary
 
         #endregion
 
+        #region Protected properties
+
+        /// <summary>
+        /// The JSON Serializer.
+        /// </summary>
+        protected JsonSerializer Serializer { get; set; }
+
+        #endregion
+
         #region Events
 
         /// <summary>
@@ -52,7 +62,7 @@ namespace StoneCo.SplunkHECLibrary
         /// </summary>
         public SplunkHECClient()
         {
-
+            this.Configure();
         }
 
         /// <summary>
@@ -75,6 +85,8 @@ namespace StoneCo.SplunkHECLibrary
             this.Configuration = config ?? throw new ArgumentNullException(nameof(config));
             this.Client.BaseAddress = config.Endpoint;
             this.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Splunk", config.Token);
+
+            this.Configure(config);
         }
 
         /// <summary>
@@ -93,11 +105,29 @@ namespace StoneCo.SplunkHECLibrary
             #endregion
 
             this.Client = new HttpClient(handler);
+            this.Configure();
         }
 
         #endregion
 
         #region Protected methods
+
+        /// <summary>
+        /// Configure the JsonSerializer.
+        /// </summary>
+        /// <param name="config"></param>
+        protected void Configure(ISplunkHECClientConfiguration config = null)
+        {            
+            JsonSerializerSettings Settings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                DateFormatString = config?.UseTimestampField?.Format,
+                DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
+                DateParseHandling = DateParseHandling.DateTimeOffset
+            };
+
+            Serializer = JsonSerializer.Create(Settings);
+        }
 
         /// <summary>
         /// Override doc field values according to a configuration.
@@ -108,25 +138,13 @@ namespace StoneCo.SplunkHECLibrary
         {
             if (config.UseTimestampField != null)
             {
-
-                if (doc.Event.TryGetValue(config.UseTimestampField.FieldName, out JToken value) == false)
+                if (doc.Event.TryGetValue(config.UseTimestampField.FieldName, out JToken _) == false)
                 {
                     throw new ArgumentException("The timestamp field name don't exists on event.", nameof(config.UseTimestampField));
                 }
 
                 try
                 {
-
-                    JsonSerializerSettings Settings = new JsonSerializerSettings
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        DateFormatString = config.UseTimestampField.Format,
-                        DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
-                        DateParseHandling = DateParseHandling.DateTimeOffset
-                    };
-
-                    JsonSerializer Serializer = JsonSerializer.Create(Settings);
-
                     JToken token = doc.Event.GetValue(config.UseTimestampField.FieldName);
                     DateTimeOffset dateTime = token.ToObject<DateTimeOffset>(Serializer);
 
@@ -181,9 +199,11 @@ namespace StoneCo.SplunkHECLibrary
             });
 
             string route = string.Format("{0}/event", this.Configuration.Endpoint.AbsolutePath);
-            HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Post, route);
-            httpRequest.Content = new StringContent(request.Serialize(), Encoding.UTF8, "application/json");            
-            return await this.Client.SendAsync(httpRequest);
+            using (HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Post, route))
+            {
+                httpRequest.Content = new StringContent(request.Serialize(), Encoding.UTF8, "application/json");
+                return await this.Client.SendAsync(httpRequest);
+            }                            
         }
 
         /// <summary>
@@ -191,17 +211,25 @@ namespace StoneCo.SplunkHECLibrary
         /// </summary>
         /// <param name="httpResponseMessage">The HttpResponseMessage.</param>
         /// <returns>The ISplunkHECResponse.</returns>
-        protected ISplunkHECResponse TreatHttpResponse(HttpResponseMessage httpResponseMessage)
+        protected async Task<ISplunkHECResponse> TreatHttpResponse(HttpResponseMessage httpResponseMessage)
         {
             ISplunkHECResponse response = new SplunkHECResponse();
-            string strResponse = httpResponseMessage.Content.ReadAsStringAsync().Result;
-            if (string.IsNullOrWhiteSpace(strResponse) == false)
+                        
+            using (Stream stream = await httpResponseMessage.Content.ReadAsStreamAsync())
             {
-                response = JsonConvert.DeserializeObject<SplunkHECResponse>(strResponse);
+                if (stream.Length > 0)
+                {
+                    using (StreamReader streamReader = new StreamReader(stream))
+                    {
+                        using (JsonTextReader jsonTextReader = new JsonTextReader(streamReader))
+                        {
+                            response = Serializer.Deserialize<SplunkHECResponse>(jsonTextReader);
+                            response.HttpResponseCode = httpResponseMessage.StatusCode;
+                        }
+                    }
+                }
             }
-
-            response.HttpResponseCode = httpResponseMessage.StatusCode;
-
+           
             return response;
         }
 
@@ -216,23 +244,23 @@ namespace StoneCo.SplunkHECLibrary
         /// <returns>The response.</returns>
         public async Task<ISplunkHECResponse> HealthCheckAsync(string token = "")
         {
-            return await Task.Run<ISplunkHECResponse>(async () =>
+            string route = string.Format("{0}/health", this.Configuration.Endpoint.AbsolutePath);
+            if (token != "")
             {
-                string route = string.Format("{0}/health", this.Configuration.Endpoint.AbsolutePath);
-                if (token != "")
+                route = string.Format("{0}?token={1}", route, token);
+            }
+
+            ISplunkHECResponse response;
+            using (HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, route))
+            {
+                using (HttpResponseMessage httpResponse = await this.Client.SendAsync(httpRequest))
                 {
-                    route = string.Format("{0}?token={1}", route, token);
+                    response = await TreatHttpResponse(httpResponse);
                 }
-
-                ISplunkHECResponse response;                
-                HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Get, route);
-                HttpResponseMessage httpResponse = await this.Client.SendAsync(httpRequest);
-
-                response = TreatHttpResponse(httpResponse);
-
-                this.AfterSend?.Invoke(this, response);
-                return response;
-            });
+            }
+                                   
+            this.AfterSend?.Invoke(this, response);
+            return response;            
         }
 
         /// <summary>
@@ -242,8 +270,7 @@ namespace StoneCo.SplunkHECLibrary
         /// <returns>The response.</returns>
         public ISplunkHECResponse HealthCheck(string token = "")
         {
-            Task<ISplunkHECResponse> response = this.HealthCheckAsync(token);            
-            return response.Result;
+            return this.HealthCheckAsync(token).GetAwaiter().GetResult();            
         }
 
         /// <summary>
@@ -266,10 +293,11 @@ namespace StoneCo.SplunkHECLibrary
             ISplunkHECResponse response;
 
             this.BeforeSend?.Invoke(this, request);
-            HttpResponseMessage httpResponse = await InternalSendAsync(request);
-
-            response = TreatHttpResponse(httpResponse);
-
+            using (HttpResponseMessage httpResponse = await InternalSendAsync(request))
+            {
+                response = await TreatHttpResponse(httpResponse);
+            }
+                
             this.AfterSend?.Invoke(this, response);
             return response;            
         }

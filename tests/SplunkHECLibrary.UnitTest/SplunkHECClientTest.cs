@@ -205,7 +205,7 @@ namespace StoneCo.SplunkHECLibrary.UnitTest
             ISplunkHECResponse response = client.Send(request);            
             Assert.AreEqual(0, response.Code);
             Assert.IsNull(response.Text);
-            Assert.AreEqual(HttpStatusCode.OK, response.HttpResponseCode);
+            Assert.AreEqual(default(HttpStatusCode), response.HttpResponseCode);
         }
 
         [TestMethod]
